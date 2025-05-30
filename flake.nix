@@ -18,17 +18,21 @@
         };
       };
       buildToolsVersion = "34.0.0";
+      cmakeVersion = "3.22.1";
       androidComposition = pkgs.androidenv.composeAndroidPackages {
         buildToolsVersions = [buildToolsVersion];
         platformVersions = ["34"];
         abiVersions = ["armeabi-v7a" "arm64-v8a"];
+        includeNDK = true;
+        ndkVersions = ["26.3.11579264"];
+        cmakeVersions = [cmakeVersion];
       };
       androidSdk = androidComposition.androidsdk;
-      # androidSdk = pkgs.androidenv.androidPkgs_9_0.androidsdk;
     in {
       devShell = with pkgs;
         mkShell {
           ANDROID_SDK_ROOT = "${androidSdk}/libexec/android-sdk";
+          ANDROID_NDK_ROOT = "${androidSdk}/libexec/android-sdk/ndk-bundle";
           ANDROID_HOME = "${androidSdk}/libexec/android-sdk";
           JAVA_HOME = jdk21.home;
           FLUTTER_ROOT = flutter;
@@ -37,13 +41,10 @@
             androidSdk
             flutter
             jdk21
-
-            # pkg-config
-            # gtk3.dev
-            # libsecret.dev
-            # sysprof.dev
           ];
-          # CMAKE_PREFIX_PATH = "${pkgs.lib.makeLibraryPath [libsecret.dev gtk3.dev]}";
+          shellHook = ''
+            export PATH="$(echo "$ANDROID_HOME/cmake/${cmakeVersion}".*/bin):$PATH"
+          '';
         };
     });
 }
